@@ -1,0 +1,5 @@
+fastapi==0.111.2
+uvicorn[standard]==0.23.1
+pydantic==2.11.2
+python-dotenv==1.0.1
+openai==1.1.0
