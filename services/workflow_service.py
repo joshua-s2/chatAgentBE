@@ -4,23 +4,39 @@ from database import SessionLocal
 
 def create_workflow(name: str, policy: str, escalation: bool):
     db = SessionLocal()
-    workflow = Workflow(name=name, policy=policy, escalation=escalation)
-    db.add(workflow)
-    db.commit()
-    db.refresh(workflow)
-    db.close()
-    return workflow
+    try:
+        existing = db.query(Workflow).filter(Workflow.name == name).first()
+        if existing:
+         
+            existing.policy = policy
+            existing.escalation = escalation
+            db.commit()
+            db.refresh(existing)
+            return existing
+        workflow = Workflow(name=name, policy=policy, escalation=escalation)
+        db.add(workflow)
+        db.commit()
+        db.refresh(workflow)
+        return workflow
+    except Exception as e:
+        db.rollback()
+        raise e
+    finally:
+        db.close()
 
 def get_workflows():
     db = SessionLocal()
-    workflows = db.query(Workflow).all()
-    db.close()
-    return workflows
+    try:
+        return db.query(Workflow).all()
+    finally:
+        db.close()
 
 def get_workflow_policy() -> str:
     db = SessionLocal()
-    wf = db.query(Workflow).order_by(Workflow.id.desc()).first()
-    db.close()
-    if not wf:
-        return "No workflow defined."
-    return wf.policy
+    try:
+        wf = db.query(Workflow).order_by(Workflow.id.desc()).first()
+        if not wf:
+            return "No workflow defined."
+        return wf.policy
+    finally:
+        db.close()
