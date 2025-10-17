@@ -1,13 +1,14 @@
 from dotenv import load_dotenv
 
 load_dotenv()
+import os
 from fastapi import FastAPI
 from routes import session, chat, workflow
 from fastapi.middleware.cors import CORSMiddleware
-import os
+from database import Base, engine
 
 
-
+Base.metadata.create_all(bind=engine)  
 
 
 app = FastAPI()

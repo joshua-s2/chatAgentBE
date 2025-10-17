@@ -1,20 +1,16 @@
-from typing import List
+from sqlalchemy.orm import Session
 from models.chat import Chat
+from database import SessionLocal
 from services import workflow_service
-import os
 import openai
-
-
-chats: List[Chat] = []
-chat_counter = 1
+import os
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def create_chat(session_id: str, message: str) -> Chat:
+def create_chat(session_id: str, message: str):
     """
-    Create a chat message and get LLM response following workflow policy.
+    Create a chat message, get the LLM response (from OpenAI), and save both to DB.
     """
-    global chat_counter
     policy_text = workflow_service.get_workflow_policy()
 
     try:
@@ -35,13 +31,21 @@ def create_chat(session_id: str, message: str) -> Chat:
     except Exception as e:
         reply = f"LLM Error: {str(e)}"
 
-    chat = Chat(id=chat_counter, session_id=session_id, message=message, response=reply)
-    chats.append(chat)
-    chat_counter += 1
+    db = SessionLocal()
+    chat = Chat(session_id=session_id, message=message, response=reply)
+    db.add(chat)
+    db.commit()
+    db.refresh(chat)
+    db.close()
+
     return chat
 
-def get_chats(session_id: str) -> List[Chat]:
+
+def get_chats(session_id: str):
     """
-    Retrieve all chats for a session
+    Retrieve all chats for a session from the database.
     """
-    return [c for c in chats if c.session_id == session_id]
+    db = SessionLocal()
+    chats = db.query(Chat).filter(Chat.session_id == session_id).all()
+    db.close()
+    return chats

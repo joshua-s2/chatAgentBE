@@ -1,21 +1,26 @@
-from typing import List
+from sqlalchemy.orm import Session
 from models.workflow import Workflow
+from database import SessionLocal
 
-workflows: List[Workflow] = []
-workflow_counter = 1
+def create_workflow(name: str, policy: str, escalation: bool):
+    db = SessionLocal()
+    workflow = Workflow(name=name, policy=policy, escalation=escalation)
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+    db.close()
+    return workflow
 
-def create_workflow(name: str, policy: str, escalation: bool) -> Workflow:
-    global workflow_counter
-    wf = Workflow(id=workflow_counter, name=name, policy=policy, escalation=escalation)
-    workflows.append(wf)
-    workflow_counter += 1
-    return wf
-
-def get_workflows() -> List[Workflow]:
+def get_workflows():
+    db = SessionLocal()
+    workflows = db.query(Workflow).all()
+    db.close()
     return workflows
 
 def get_workflow_policy() -> str:
-    """Return concatenated policy text from all workflows (or the relevant one)."""
-    if not workflows:
+    db = SessionLocal()
+    wf = db.query(Workflow).order_by(Workflow.id.desc()).first()
+    db.close()
+    if not wf:
         return "No workflow defined."
-    return workflows[-1].policy
+    return wf.policy

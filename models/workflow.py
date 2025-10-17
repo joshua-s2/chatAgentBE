@@ -1,8 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional
+from sqlalchemy import Column, Integer, String, Boolean, Text
+from database import Base 
 
-class Workflow(BaseModel):
-    id: Optional[int] = None
-    name: str
-    policy: str
-    escalation: bool
+class Workflow(Base):
+    __tablename__ = "workflows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    policy = Column(Text)
+    escalation = Column(Boolean, default=False)

@@ -1,7 +1,11 @@
+from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
+from database import Base
 
-from pydantic import BaseModel
-from typing import Optional
+class Session(Base):
+    __tablename__ = "sessions"
 
-class Session(BaseModel):
-    id: Optional[str] = None
-    name: str
+    id = Column(String, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+
+    chats = relationship("Chat", back_populates="session", cascade="all, delete")
