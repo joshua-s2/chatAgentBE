@@ -32,6 +32,4 @@ def get_chats(session_id: str, db: Session = Depends(get_db)):
     Retrieve all messages for a session
     """
     chats = chat_service.get_chats(session_id)
-    if not chats:
-        raise HTTPException(status_code=404, detail="No chats found for this session.")
-    return chats
+    return chats if chats else []

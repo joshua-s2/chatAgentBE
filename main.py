@@ -13,10 +13,6 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(session.router, prefix="/api")
-app.include_router(chat.router, prefix="/api")
-app.include_router(workflow.router, prefix="/api") 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000","https://chat-agent-joshua.vercel.app"],  
@@ -24,6 +20,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(session.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
+app.include_router(workflow.router, prefix="/api")
 @app.get("/")
 def root():
     return {"message": "backend is running"}
