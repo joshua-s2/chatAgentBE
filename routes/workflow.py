@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from services import workflow_service
 
-router = APIRouter(prefix="/api/workflow", tags=["Workflow"])
+router = APIRouter(prefix="/workflow", tags=["Workflow"])
 
 
 @router.post("")

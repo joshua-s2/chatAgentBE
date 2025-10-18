@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from models.chat import Chat
+from models.session import Session as ChatSession  
 from database import SessionLocal
 from services import workflow_service
 import openai
@@ -9,13 +10,23 @@ client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def create_chat(session_id: str, message: str):
     """
-    Create a chat message, get the LLM response (from OpenAI), and save both to DB.
+    Create a chat message, ensure session exists,
+    get LLM response, and save both to DB.
     """
+    db = SessionLocal()
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    if not session:
+        session = ChatSession(id=session_id)
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+  
     policy_text = workflow_service.get_workflow_policy()
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",  
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
@@ -25,14 +36,12 @@ def create_chat(session_id: str, message: str):
             ],
             max_tokens=500,
         )
-
         reply = response.choices[0].message.content
 
     except Exception as e:
         reply = f"LLM Error: {str(e)}"
 
-    db = SessionLocal()
-    chat = Chat(session_id=session_id, message=message, response=reply)
+    chat = Chat(session_id=session.id, message=message, response=reply)
     db.add(chat)
     db.commit()
     db.refresh(chat)
