@@ -46,7 +46,6 @@ def create_chat(session_id: str, message: str):
         db.commit()
         db.refresh(chat)
         
-        # Return serializable dict instead of SQLAlchemy object
         return {
             "id": chat.id,
             "session_id": chat.session_id,
@@ -67,7 +66,6 @@ def get_chats(session_id: str):
     db = SessionLocal()
     try:
         chats = db.query(Chat).filter(Chat.session_id == session_id).all()
-        # Return serializable list of dicts
         return [
             {
                 "id": chat.id,
