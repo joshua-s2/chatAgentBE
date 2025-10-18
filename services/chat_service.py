@@ -17,7 +17,7 @@ def create_chat(session_id: str, message: str):
     try:
         session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
         if not session:
-            session = ChatSession(id=session_id)
+            session = ChatSession(id=session_id, name=f"Chat {session_id}")
             db.add(session)
             db.commit()
             db.refresh(session)
